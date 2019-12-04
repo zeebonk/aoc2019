@@ -1,4 +1,7 @@
-.PHONY: day01 day02
+.PHONY: day01 day02 day03
+day03:
+	cd day03; cat ../input/day03.txt | cargo run
+
 day02:
 	cd day02; cat ../input/day02.txt | cargo run
 
