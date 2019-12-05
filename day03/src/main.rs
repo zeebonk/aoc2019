@@ -1,26 +1,27 @@
-use std::io::{self, Read};
+use std::io::{self, BufRead};
 use std::error::Error;
 use std::collections::HashMap;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let lines: Vec<Vec<&str>> = io::stdin()
+    let lines: Vec<Vec<String>> = io::stdin()
         .lock()
         .lines()
-        .map(|l| l.split(",").collect())
+        .filter_map(Result::ok)
+        .map(|l| l.split(",").map(|s| s.to_owned()).collect())
         .collect();
 
-    let steps1 = walk(&lines[0]);
-    let steps2 = walk(&lines[1]);
+    let steps1 = walk(lines[0].iter());
+    let steps2 = walk(lines[1].iter());
 
     let pt1 = steps1.keys()
-        .filter(|&x| steps2.contains_key(x))
-        .map(|&x| x.0.abs() + x.1.abs())
+        .filter(|&pos| steps2.contains_key(pos))
+        .map(|&pos| pos.0.abs() + pos.1.abs())
         .min()
         .unwrap_or(0);
 
     let pt2 = steps1.keys()
-        .filter(|pos| steps2.contains_key(&pos))
-        .map(|pos| steps1[&pos] + steps2[&pos])
+        .filter(|&pos| steps2.contains_key(pos))
+        .map(|&pos| steps1[&pos] + steps2[&pos])
         .min()
         .unwrap_or(0);
 
@@ -30,7 +31,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn walk(ops: &Vec<&str>) -> HashMap<(i32, i32), i32> {
+fn walk<'a, A>(ops: A) -> HashMap<(i32, i32), i32>
+where A: Iterator<Item = &'a String>
+{
     let mut state = HashMap::new();
     let mut x: i32 = 0;
     let mut y: i32 = 0;
